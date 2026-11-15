@@ -42,3 +42,6 @@ La importación #import muestra primero los ejercicios estructurados para confir
 
 ## Sesiones guardadas y persistencia
 The local-only POC now records workouts and routines atomically (write succeeds before in-memory state is changed) and shows each saved session and its sets under Progreso. Reload in the SAME browser to verify localStorage persistence. The ChatGPT embedded browser, Safari and an installed PWA may use separate stores. This is not yet a synced personal diary. The existing Exportar copia JSON is backup-export only, and restoration is not yet implemented. Avoid real data on shared CDN origin.
+
+## AI backend (prepared, not deployed)
+See `bridge/README.md` and `bridge/test/core.test.mjs`. Same-origin Node service talks to existing Azure OpenAI with new Container Apps Managed Identity and structured JSON; protected bearer token is only provisioned through a separate private origin after deployment. The current raw.githack POC continues to work without the AI service. The `Interpretar con IA` button appears only on a `*.azurecontainerapps.io` HTTPS origin. No live Azure permission, image deployment, CI run or model request has been completed in this WP.
