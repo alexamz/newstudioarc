@@ -7,3 +7,4 @@
 - Sin duplicar workflows de Azure. Sin commits pequeños: una publicación atómica.
 - 2026-11-15: tras fallo real de SpeechRecognition en Safari iPhone, preferir dictado nativo del teclado (sin SDK ni servicios de pago), con botón que enfoca textarea. Mantener Atajos fuera del flujo principal hasta aceptación.
 - 2026-11-15: tras aceptación del dictado de teclado, robustecer parser determinista antes de añadir infraestructura. 19 pruebas Node integradas en repo sin workflow ni runner. Preferir alerta/revisión a inventar datos ante dictados incompletos.
+- 2026-11-15: el usuario rechazó la calidad semántica de 19 tests sintéticos frente a dictados reales. Cortar inversión en heurísticas/regex. Separar voz->texto de texto->datos estructurados. Priorizar interpretación LLM, catalogación de ejercicios con contexto de rutina e incertidumbre explícita. Nunca inferir datos no dichos. API key solo en backend autenticado.

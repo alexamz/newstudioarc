@@ -23,3 +23,7 @@ En Safari iPhone real la POC abrió correctamente, pero el botón anterior `Spee
 ## Comprobación automatizada (sin CI)
 
 Ejecutar `node --test gym-voice/tests/parser.test.mjs` desde la raíz del repositorio. La prueba reproduce 19 frases, pesos y repeticiones y confirma el número de alertas. No requiere npm, Azure ni servicios externos.
+
+## Limitación crítica y siguiente hito
+
+Pruebas de voz reales (2026-11-15): el dictado nativo de iOS funciona y la interpretación de un ejercicio simple funciona; expresiones más naturales sobre pesos/repeticiones y ejercicios degradan el parser de reglas. Las pruebas sintéticas no equivalen a aceptación semántica. La interfaz avisa de que el intérprete actual es experimental. Ver `docs/PROJECT_STATE.md` y `docs/AI_INTERPRETATION_CONTRACT.md`. No integrar claves OpenAI en código estático ni reutilizar sin más el backend/secretos de otros proyectos.
