@@ -39,3 +39,6 @@ El enlace debe usar la URL pública de Gym antes del fragmento y solo debe prove
 ## Importación de ChatGPT — corrección de experiencia
 
 La importación #import muestra primero los ejercicios estructurados para confirmar, sin botón de interpretación básica que pueda sobrescribirlos. El resumen inicial indica el número de series recibidas. Cambiar Durante la sesión/Todo al final no borra el texto original. Si la pantalla muestra 'Interpretar (básico)' junto al dictado original, no está en el flujo estructurado: abrir nuevamente el enlace de importación. La causa exacta del resultado observado en iPhone aún requiere aceptación física.
+
+## Sesiones guardadas y persistencia
+The local-only POC now records workouts and routines atomically (write succeeds before in-memory state is changed) and shows each saved session and its sets under Progreso. Reload in the SAME browser to verify localStorage persistence. The ChatGPT embedded browser, Safari and an installed PWA may use separate stores. This is not yet a synced personal diary. The existing Exportar copia JSON is backup-export only, and restoration is not yet implemented. Avoid real data on shared CDN origin.
