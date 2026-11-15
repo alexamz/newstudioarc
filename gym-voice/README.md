@@ -27,3 +27,11 @@ Ejecutar `node --test gym-voice/tests/parser.test.mjs` desde la raíz del reposi
 ## Limitación crítica y siguiente hito
 
 Pruebas de voz reales (2026-11-15): el dictado nativo de iOS funciona y la interpretación de un ejercicio simple funciona; expresiones más naturales sobre pesos/repeticiones y ejercicios degradan el parser de reglas. Las pruebas sintéticas no equivalen a aceptación semántica. La interfaz avisa de que el intérprete actual es experimental. Ver `docs/PROJECT_STATE.md` y `docs/AI_INTERPRETATION_CONTRACT.md`. No integrar claves OpenAI en código estático ni reutilizar sin más el backend/secretos de otros proyectos.
+
+
+## Importación estructurada desde ChatGPT (sin backend)
+ChatGPT interpreta el texto que le dictes y genera un enlace con fragmento `#import=${encodeURIComponent(JSON.stringify(payload))}` donde `payload` es un objeto como:
+```json
+{"v":1,"source":"chatgpt","raw":"Press banca, tres series de diez con cuarenta kilos","entries":[{"name":"press banca","sets":[{"reps":10,"weight":40},{"reps":10,"weight":40},{"reps":10,"weight":40}]}],"unresolved":[]}
+```
+El enlace debe usar la URL pública de Gym antes del fragmento y solo debe provenir de un mensaje de ChatGPT después de interpretar el dictado. La PWA valida versión, origen declarado, longitud, 12 ejercicios máximo, 20 series/ejercicio, datos numéricos y preguntas sin resolver. **No guarda automáticamente:** hay que confirmar las series. Esta es una solución intermedia para la POC, no una integración de API en la app. **Solo datos ficticios** hasta tener alojamiento propio.

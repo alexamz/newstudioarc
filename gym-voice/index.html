@@ -7,7 +7,7 @@
 <script>
 "use strict";
 const KEY="gym-voice-demo-2026";let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}if(!db||!Array.isArray(db.sessions))db={sessions:[],routines:[]};if(!Array.isArray(db.routines))db.routines=[];
-let page="hoy",mode="durante",draft=[],issues=[],original="",needConfirm=false,active=null;
+let page="hoy",mode="durante",draft=[],issues=[],original="",needConfirm=false,active=null,importNotice="";
 const el=id=>document.getElementById(id), esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const notify=t=>{const e=el("toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",3500)};
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){notify("No se pudo guardar en este navegador");return false}};
@@ -53,14 +53,14 @@ function parse(text){if(!String(text||"").trim())return {entries:[],alerts:["No 
 function tab(t){page=t;render()}
 function render(){["hoy","rutinas","progreso"].forEach(t=>el("nav-"+t).className=page===t?"on":"");el("screen").innerHTML=page==="hoy"?viewToday():page==="rutinas"?viewRoutines():viewProgress()}
 function viewToday(){const ongoing=db.sessions.find(s=>!s.finished);let rows=ongoing?ongoing.entries:[];return '<h1>Tu entrenamiento</h1><p class="muted small">Registra cada ejercicio mientras entrenas o dicta todo al terminar.</p><p class="warning">Interpretación básica, todavía sin IA. El dictado real puede confundir pesos, repeticiones y ejercicios: revisa todas las series antes de guardarlas.</p><div class="modes"><button class="'+(mode==="durante"?"on":"")+'" onclick="chooseMode(\'durante\')">Durante la sesión</button><button class="'+(mode==="final"?"on":"")+'" onclick="chooseMode(\'final\')">Todo al final</button></div><div class="card"><h2>🎙 Dictar entrenamiento</h2><textarea id="voice" placeholder="Remo con barra, tres series con 40 kilos, 10, 9 y 8 repeticiones">'+esc(original)+'</textarea><div class="actions"><button class="secondary" onclick="focusVoice()">🎙 Dictar con teclado</button><button class="primary" onclick="interpret()">Interpretar (básico)</button></div><p class="muted small">En iPhone, pulsa <strong>Dictar con teclado</strong> y toca el micrófono del teclado. No hay que activar permisos de voz de Safari.</p><details><summary class="tiny" style="cursor:pointer;padding:10px 0">Atajos de Siri (opcional)</summary><p class="tiny">Atajo: «Dictar texto» → «Codificar URL» → «Abrir URLs» con la URL de esta web más #voice= y el texto codificado.</p><button class="secondary" onclick="copyPrefix()">Copiar prefijo para Atajos</button></details></div>'+viewDraft()+'<div class="card"><div class="row"><h2>Sesión actual</h2>'+(ongoing?'<button class="secondary" onclick="finish()">Finalizar</button>':'<button class="secondary" onclick="start()">Iniciar sesión</button>')+'</div>'+(rows.length?rows.map(e=>'<div class="entry"><strong>'+esc(e.name)+'</strong><p class="muted small">'+esc(e.sets.map(s=>s.weight+' kg × '+s.reps).join(' · '))+'</p></div>').join(''):'<p class="muted small">Todavía no has registrado series.</p>')+'</div><p class="tiny">Demo temporal. Prueba con datos ficticios: el almacenamiento del navegador no está sincronizado ni protegido como una aplicación definitiva.</p>'}
-function viewDraft(){if(!draft.length)return "";return '<div class="card"><h2>Revisa antes de guardar</h2>'+issues.map(i=>'<p class="warning">⚠ '+esc(i)+'</p>').join('')+draft.map((e,i)=>'<div class="entry"><label>Ejercicio '+(i+1)+'</label><input id="n'+i+'" value="'+esc(e.name)+'" oninput="changed()">'+e.sets.map((s,j)=>'<div class="set"><span class="tiny">Serie '+(j+1)+'</span><input id="r'+i+'_'+j+'" type="number" min="1" max="999" placeholder="Reps" value="'+(s.reps==null?"":esc(s.reps))+'" oninput="changed()"><input id="w'+i+'_'+j+'" type="number" min="0" max="999" step=".5" placeholder="kg" value="'+(s.weight==null?"":esc(s.weight))+'" oninput="changed()"></div>').join('')+'</div>').join('')+'<label class="check"><input type="checkbox" id="review" onchange="needConfirm=this.checked"> He comprobado los datos del dictado</label><div class="actions"><button class="secondary" onclick="discard()">Cancelar</button><button class="primary" onclick="saveDraft()">Guardar series</button></div></div>'}
+function viewDraft(){if(!draft.length)return "";return '<div class="card"><h2>Revisa antes de guardar</h2>'+(importNotice?'<p class="okay">'+esc(importNotice)+'</p>':'')+issues.map(i=>'<p class="warning">⚠ '+esc(i)+'</p>').join('')+draft.map((e,i)=>'<div class="entry"><label>Ejercicio '+(i+1)+'</label><input id="n'+i+'" value="'+esc(e.name)+'" oninput="changed()">'+e.sets.map((s,j)=>'<div class="set"><span class="tiny">Serie '+(j+1)+'</span><input id="r'+i+'_'+j+'" type="number" min="1" max="999" placeholder="Reps" value="'+(s.reps==null?"":esc(s.reps))+'" oninput="changed()"><input id="w'+i+'_'+j+'" type="number" min="0" max="999" step=".5" placeholder="kg" value="'+(s.weight==null?"":esc(s.weight))+'" oninput="changed()"></div>').join('')+'</div>').join('')+'<label class="check"><input type="checkbox" id="review" onchange="needConfirm=this.checked"> He comprobado los datos del dictado</label><div class="actions"><button class="secondary" onclick="discard()">Cancelar</button><button class="primary" onclick="saveDraft()">Guardar series</button></div></div>'}
 function chooseMode(v){original=el("voice")?.value||"";mode=v;render()}
 function start(){db.sessions.unshift({id:Date.now(),date:new Date().toISOString(),entries:[],finished:false});persist();render()}
 function finish(){const s=db.sessions.find(s=>!s.finished);if(s){s.finished=true;persist()}render()}
-function interpret(){original=el("voice")?.value||"";const p=parse(original);draft=p.entries;issues=p.alerts;needConfirm=false;render()}
-function discard(){draft=[];issues=[];needConfirm=false;render()}
+function interpret(){original=el("voice")?.value||"";const p=parse(original);draft=p.entries;issues=p.alerts;importNotice="";needConfirm=false;render()}
+function discard(){draft=[];issues=[];importNotice="";needConfirm=false;render()}
 function changed(){needConfirm=false;const r=el("review");if(r)r.checked=false}
-function saveDraft(){if(!el("review")?.checked){notify("Revisa los datos y marca la confirmación");return}const entries=draft.map((e,i)=>({name:el("n"+i).value.trim(),sets:e.sets.map((s,j)=>({reps:Number(el("r"+i+"_"+j).value),weight:el("w"+i+"_"+j).value===""?null:Number(el("w"+i+"_"+j).value)}))}));if(entries.some(e=>!e.name||e.sets.some(s=>!Number.isInteger(s.reps)||s.reps<1||s.reps>40||s.weight===null||!Number.isFinite(s.weight)||s.weight<0||s.weight>500))){notify("Corrige los campos incompletos o sospechosos");return}let session=db.sessions.find(s=>!s.finished);if(!session){session={id:Date.now(),date:new Date().toISOString(),entries:[],finished:false};db.sessions.unshift(session)}session.entries.push(...entries);if(mode==="final")session.finished=true;if(!persist())return;draft=[];issues=[];original="";render();notify("Entrenamiento guardado")}
+function saveDraft(){if(!el("review")?.checked){notify("Revisa los datos y marca la confirmación");return}const entries=draft.map((e,i)=>({name:el("n"+i).value.trim(),sets:e.sets.map((s,j)=>({reps:Number(el("r"+i+"_"+j).value),weight:el("w"+i+"_"+j).value===""?null:Number(el("w"+i+"_"+j).value)}))}));if(entries.some(e=>!e.name||e.sets.some(s=>!Number.isInteger(s.reps)||s.reps<1||s.reps>40||s.weight===null||!Number.isFinite(s.weight)||s.weight<0||s.weight>500))){notify("Corrige los campos incompletos o sospechosos");return}let session=db.sessions.find(s=>!s.finished);if(!session){session={id:Date.now(),date:new Date().toISOString(),entries:[],finished:false};db.sessions.unshift(session)}session.entries.push(...entries);if(mode==="final")session.finished=true;if(!persist())return;draft=[];issues=[];importNotice="";original="";render();notify("Entrenamiento guardado")}
 function focusVoice(){const field=el("voice");if(field){field.focus();notify("Toca el micrófono del teclado del iPhone para empezar a dictar")}}
 function copyPrefix(){const url=location.href.split("#")[0]+"#voice=";if(navigator.clipboard?.writeText)navigator.clipboard.writeText(url).then(()=>notify("Prefijo copiado")).catch(()=>notify("Copia la URL desde Safari"));else notify("Copia la URL desde Safari")}
 function viewRoutines(){return '<h1>Rutinas</h1><p class="muted small">Guarda el plan como lo dirías hablando. En esta prueba solo se guarda el texto: no genera todavía series automáticamente.</p><div class="card"><h2>Nueva rutina</h2><input id="routineName" placeholder="Ej.: Torso A"><label>Ejercicios y descansos</label><textarea id="routineText" placeholder="Press banca 3x8-12, descanso 2 minutos. Remo 3x10..."></textarea><button class="primary wide heading" onclick="saveRoutine()">Guardar rutina</button></div>'+(!db.routines.length?'<div class="empty">Todavía no tienes rutinas.</div>':db.routines.map((r,i)=>'<div class="card"><div class="row"><h2>'+esc(r.name)+'</h2><button class="secondary" onclick="deleteRoutine('+i+')">Eliminar</button></div><p class="muted small">'+esc(r.text)+'</p><button class="secondary" onclick="useRoutine('+i+')">Usar como referencia</button></div>').join(''))}
@@ -69,7 +69,42 @@ function deleteRoutine(i){if(confirm("¿Eliminar esta rutina?")){db.routines.spl
 function useRoutine(i){page="hoy";render();notify("Rutina: "+db.routines[i].name)}
 function viewProgress(){const all=db.sessions.flatMap(s=>s.entries.map(e=>({...e,date:s.date})));const count=all.reduce((n,e)=>n+e.sets.length,0);const exercises=[...new Set(all.map(e=>e.name))].sort();return '<h1>Progreso</h1><p class="muted small">'+db.sessions.length+' sesiones · '+count+' series guardadas</p><div class="card"><h2>Evolución por ejercicio</h2>'+(!exercises.length?'<div class="empty">Registra tu primera sesión para ver la evolución.</div>':exercises.map(name=>{const entries=all.filter(e=>e.name===name).reverse();const max=Math.max(1,...entries.flatMap(e=>e.sets.map(s=>s.weight)));return '<div class="entry"><strong>'+esc(name)+'</strong>'+entries.slice(-8).map(e=>{const top=Math.max(...e.sets.map(s=>s.weight));return '<div class="small muted">'+new Date(e.date).toLocaleDateString("es-ES")+' · '+top+' kg · '+e.sets.map(s=>s.reps).join("/")+' reps<div class="bar" style="width:'+Math.max(2,Math.round(top/max*100))+'%"></div></div>'}).join('')+'</div>'}).join(''))+'</div><button class="secondary wide" onclick="exportData()">Exportar copia JSON</button><p class="tiny">El peso máximo no es una estimación de fuerza. Los datos están solo en el navegador que uses.</p>'}
 function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="gym-voice-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function importHash(){if(!location.hash.startsWith("#voice="))return;try{original=decodeURIComponent(location.hash.slice(7).replace(/\+/g,"%20"));page="hoy";history.replaceState(null,"",location.href.split("#")[0]);const p=parse(original);draft=p.entries;issues=p.alerts;needConfirm=false}catch(e){notify("No se pudo interpretar el enlace")}}
+function validateImport(payload){
+  if(!payload||payload.v!==1||payload.source!=="chatgpt"||!Array.isArray(payload.entries)||!payload.entries.length||payload.entries.length>12)throw Error("Formato de importación no válido");
+  if(typeof payload.raw!=="string"||payload.raw.length>3000)throw Error("Texto original no válido");
+  if(payload.unresolved!==undefined&&(!Array.isArray(payload.unresolved)||payload.unresolved.length>12||payload.unresolved.some(x=>typeof x!=="string"||x.length>250)))throw Error("Dudas no válidas");
+  const entries=payload.entries.map(e=>{
+    if(!e||typeof e.name!=="string"||e.name.length>70||!Array.isArray(e.sets)||!e.sets.length||e.sets.length>20)throw Error("Ejercicio no válido");
+    const sets=e.sets.map(s=>{
+      if(!s||!Object.prototype.hasOwnProperty.call(s,"reps")||!Object.prototype.hasOwnProperty.call(s,"weight"))throw Error("Serie incompleta");
+      if(s.reps!==null&&(!Number.isInteger(s.reps)||s.reps<1||s.reps>40))throw Error("Repeticiones fuera de rango");
+      if(s.weight!==null&&(!Number.isFinite(s.weight)||s.weight<0||s.weight>500))throw Error("Peso fuera de rango");
+      return {reps:s.reps,weight:s.weight};
+    });
+    return {name:e.name.trim(),sets};
+  });
+  return {entries,raw:payload.raw,unresolved:payload.unresolved||[]};
+}
+function importHash(){
+  const hash=location.hash||"";
+  if(!hash.startsWith("#voice=")&&!hash.startsWith("#import="))return;
+  try{
+    if(hash.length>14000)throw Error("Enlace demasiado largo");
+    if(hash.startsWith("#voice=")){
+      original=decodeURIComponent(hash.slice(7).replace(/\+/g,"%20"));
+      const p=parse(original);draft=p.entries;issues=p.alerts;importNotice="";
+    } else {
+      const json=decodeURIComponent(hash.slice(8));
+      const input=validateImport(JSON.parse(json));
+      original=input.raw;draft=input.entries;
+      issues=input.unresolved.map(x=>"Por aclarar: "+x);
+      if(draft.some(e=>!e.name||e.sets.some(s=>s.reps===null||s.weight===null)))issues.push("Completa los ejercicios o series sin datos antes de guardar");
+      importNotice="Datos interpretados externamente. Confirma cada serie antes de guardar.";
+    }
+    page="hoy";needConfirm=false;
+    history.replaceState(null,"",location.href.split("#")[0]);
+  }catch(e){draft=[];issues=[];importNotice="";notify("Enlace de entrenamiento inválido: "+e.message)}
+}
 window.addEventListener("hashchange",()=>{importHash();render()});importHash();render();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script></body></html>
