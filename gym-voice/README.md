@@ -35,3 +35,7 @@ ChatGPT interpreta el texto que le dictes y genera un enlace con fragmento `#imp
 {"v":1,"source":"chatgpt","raw":"Press banca, tres series de diez con cuarenta kilos","entries":[{"name":"press banca","sets":[{"reps":10,"weight":40},{"reps":10,"weight":40},{"reps":10,"weight":40}]}],"unresolved":[]}
 ```
 El enlace debe usar la URL pública de Gym antes del fragmento y solo debe provenir de un mensaje de ChatGPT después de interpretar el dictado. La PWA valida versión, origen declarado, longitud, 12 ejercicios máximo, 20 series/ejercicio, datos numéricos y preguntas sin resolver. **No guarda automáticamente:** hay que confirmar las series. Esta es una solución intermedia para la POC, no una integración de API en la app. **Solo datos ficticios** hasta tener alojamiento propio.
+
+## Importación de ChatGPT — corrección de experiencia
+
+La importación #import muestra primero los ejercicios estructurados para confirmar, sin botón de interpretación básica que pueda sobrescribirlos. El resumen inicial indica el número de series recibidas. Cambiar Durante la sesión/Todo al final no borra el texto original. Si la pantalla muestra 'Interpretar (básico)' junto al dictado original, no está en el flujo estructurado: abrir nuevamente el enlace de importación. La causa exacta del resultado observado en iPhone aún requiere aceptación física.
