@@ -11,28 +11,45 @@ let page="hoy",mode="durante",draft=[],issues=[],original="",needConfirm=false,a
 const el=id=>document.getElementById(id), esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const notify=t=>{const e=el("toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",3500)};
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){notify("No se pudo guardar en este navegador");return false}};
-const digit={un:1,una:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90};
+const digit={un:1,una:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90};
 const normal=s=>String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const numbers=s=>normal(s).replace(/\b(treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)\s+y\s+(un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\b/g,(_,a,b)=>digit[a]+digit[b]).replace(/\b[a-z]+\b/g,w=>digit[w]===undefined?w:String(digit[w]));
-const catalog=[["press banca","press de banca","pres banca"],["remo con barra","remo barra"],["peso muerto","deadlift"],["sentadilla","sentadillas"],["curl de bíceps","curl de biceps","cool de biceps","curl biceps"],["press militar","press hombro"],["jalón al pecho","jalon pecho"],["dominadas","dominada"],["prensa","prensa de piernas"],["remo","remo"],["elevaciones laterales","elevaciones laterales"],["fondos","fondos"]];
-function nameOf(s){const n=normal(s);let hits=[];for(const names of catalog)for(const a of names){const at=n.indexOf(normal(a));if(at>=0)hits.push({name:names[0],at,len:a.length})}hits.sort((a,b)=>a.at-b.at||b.len-a.len);if(hits.length)return hits[0].name;return s.replace(/^(hoy\s+)?(he hecho|hice|hago)\s+/,"").split(/\d/)[0].replace(/[,:;.\s]+$/,"").trim().slice(0,40)}
-function parseOne(raw){let s=numbers(raw),name=nameOf(s),alerts=[];const countHit=s.match(/\b(\d{1,2})\s*series?\b/),count=countHit?Number(countHit[1]):0;
-const multi=[...s.matchAll(/\b(\d{1,3})\s*(?:repeticiones?|reps?)?\s*(?:con|a)\s*(\d+(?:[.,]\d+)?)\s*(?:kg|kilos?)?\b/g)];
-let sets=[];
-if(multi.length>=2&&(!count||multi.length===count))sets=multi.map(m=>({reps:Number(m[1]),weight:Number(m[2].replace(",","."))}));
-else {const w=s.match(/\b(\d+(?:[.,]\d+)?)\s*(kg|kilos?)\b/),weight=w?Number(w[1].replace(",",".")):null;
-let remaining=s.replace(/\b\d+(?:[.,]\d+)?\s*(kg|kilos?)\b/g," ").replace(/\b\d+\s*series?\b/g," ").replace(/\b(?:descanso|pausa)\s*\d+\s*(?:minutos?|segundos?)?/g," ");
-let reps=[...remaining.matchAll(/\b(\d{1,3})\b/g)].map(x=>Number(x[1]));
+const catalog=[["press banca","press de banca","pres banca"],["remo con barra","remo barra"],["peso muerto","deadlift"],["sentadilla","sentadillas"],["curl de bíceps","curl de biceps","cool de biceps","curl biceps"],["press militar","press hombro"],["jalón al pecho","jalon pecho"],["dominadas","dominada"],["prensa de piernas","prensa"],["remo","remo"],["elevaciones laterales","elevaciones laterales"],["fondos","fondos"]];
+const escaped=s=>normal(s).replace(/[^a-z0-9 ]/g,"\\$&");
+const aliases=[...new Set(catalog.flat())].sort((a,b)=>b.length-a.length).map(escaped).join("|");
+const afterAnd=new RegExp("\\s+y\\s+(?=(?:"+aliases+")\\b)","gi");
+const afterComma=new RegExp(",\\s*(?=(?:"+aliases+")\\b)","gi");
+function nameOf(s){const n=normal(s),hits=[];for(const names of catalog)for(const a of names){const at=n.search(new RegExp("\\b"+escaped(a)+"\\b"));if(at>=0)hits.push({name:names[0],at,len:a.length})}hits.sort((a,b)=>a.at-b.at||b.len-a.len);if(hits.length)return hits[0].name;return s.replace(/^(hoy\s+)?(he hecho|hice|hago)\s+/,"").split(/\d/)[0].replace(/[,:;.\s]+$/,"").trim().slice(0,50)}
+function splitStatements(text){return numbers(text).replace(/(\d)\.(\d)/g,"$1,$2").replace(/\b(?:y\s+)?lo\s+he\s+hecho\s+/gi,"; ").replace(/\by\s+(?:tambien\s+)?he\s+hecho\s+/gi,"; ").replace(afterAnd,"; ").replace(afterComma,"; ").split(/\s*(?:[;.!]+|\b(?:despues|luego|finalmente|por\s+ultimo|tambien\s+he\s+hecho)\b)\s*/i).map(x=>x.trim()).filter(Boolean)}
+function parseOne(raw){
+const s=numbers(raw),name=nameOf(s),alerts=[],m=s.match(/\b(\d{1,2})\s*series?\b/),x=s.match(/\b(\d{1,2})\s*(?:x|por)\s*(\d{1,3})\b/),count=m?Number(m[1]):x?Number(x[1]):0;
+const cleaned=s.replace(/\b(?:descanso|descansos|pausa)\s*(?:de\s*)?\d+(?:[.,]\d+)?\s*(?:minutos?|segundos?)?/g," ").replace(/\b\d+(?:[.,]\d+)?\s*(?:minutos?|segundos?)\s*(?:de\s*)?(?:descanso|pausa)?\b/g," ").replace(/\b\d+\s*grados\b/g," ").replace(/\b\d+\s*°/g," ");
+const group=[...cleaned.matchAll(/\b(\d{1,2})\s*(?:series?\s*(?:de\s*)?|x\s*|por\s*|de\s*)(\d{1,3})\s*(?:repeticiones?|reps?)?\s*(?:con|a)\s*(\d+(?:[.,]\d+)?)\s*(?:kg|kilos?)?\b/g)];
+const multi=[...cleaned.matchAll(/\b(\d{1,3})\s*(?:repeticiones?|reps?)?\s*(?:con|a)\s*(\d+(?:[.,]\d+)?)\s*(?:kg|kilos?)?\b/g)];
+let sets=[],usedGroup=false;
+if(group.length&&group.reduce((n,g)=>n+Number(g[1]),0)<=20){
+usedGroup=true;sets=group.flatMap(g=>Array.from({length:Number(g[1])},()=>({reps:Number(g[2]),weight:Number(g[3].replace(",","."))})));
+let remainder=cleaned;for(const g of [...group].reverse())remainder=remainder.slice(0,g.index)+" "+remainder.slice(g.index+g[0].length);
+if(/\b\d{1,3}\s*(?:repeticiones?|reps?)?\s*(?:con|a)\s*\d+\b/.test(remainder))alerts.push("Hay series fuera de los bloques reconocidos: revisa el dictado");
+}else if(multi.length>=2){sets=multi.map(g=>({reps:Number(g[1]),weight:Number(g[2].replace(",","."))}))}
+else{
+const w=cleaned.match(/\b(\d+(?:[.,]\d+)?)\s*(kg|kilos?)\b/),weight=w?Number(w[1].replace(",",".")):/\b(?:sin\s+peso|sin\s+lastre|peso\s+corporal)\b/.test(cleaned)?0:null;
+const rest=cleaned.replace(/\b\d+(?:[.,]\d+)?\s*(?:kg|kilos?)\b/g," ").replace(/\b\d+\s*series?\b/g," ").replace(/\b\d+\s*(?:x|por)\s*\d+\b/g," ");
+let reps=[...rest.matchAll(/\b(\d{1,3})\b/g)].map(t=>Number(t[1]));
+if(x&&!reps.length)reps=[Number(x[2])];
 if(count&&reps.length===1)reps=Array(count).fill(reps[0]);
 if(count&&!reps.length)reps=Array(count).fill(null);
-sets=(reps.length?reps:[null]).slice(0,20).map(r=>({reps:r,weight}));}
-if(!name)alerts.push("Ejercicio desconocido");if(count&&count!==sets.length)alerts.push("Se dictaron "+count+" series pero se reconocieron "+sets.length);
-if(sets.some(x=>!x.reps))alerts.push("Faltan repeticiones");if(sets.some(x=>x.weight===null))alerts.push("Falta el peso");if(sets.some(x=>x.reps>40))alerts.push("Repeticiones sospechosas: Siri puede haber unido dos cifras");
+sets=(reps.length?reps:[null]).slice(0,20).map(reps=>({reps,weight}));
+}
+if(!name)alerts.push("Ejercicio desconocido");
+if(!usedGroup&&count&&count!==sets.length)alerts.push("Se dictaron "+count+" series pero se reconocieron "+sets.length);
+if(sets.some(s=>!s.reps))alerts.push("Faltan repeticiones");
+if(sets.some(s=>s.weight===null))alerts.push("Falta el peso");
+if(sets.some(s=>s.reps>40))alerts.push("Repeticiones sospechosas: Siri puede haber unido dos cifras");
+if(!sets.length||sets.length>20)alerts.push("Cantidad de series no válida");
 return {name,sets,alerts};
 }
-function parse(text){const s=text.trim();if(!s)return {entries:[],alerts:["No hay dictado"]};
-const parts=s.split(/\s*(?:[;.!]+|\b(?:despu[eé]s|luego|finalmente|por último|y he hecho|también he hecho)\b)\s*/i).map(x=>x.trim()).filter(Boolean);
-const entries=parts.map(parseOne);return {entries,alerts:entries.flatMap((e,i)=>e.alerts.map(a=>(i+1)+". "+a))}}
+function parse(text){if(!String(text||"").trim())return {entries:[],alerts:["No hay dictado"]};const entries=splitStatements(text).map(parseOne);return {entries,alerts:entries.flatMap((e,i)=>e.alerts.map(a=>(i+1)+". "+a))}}
 function tab(t){page=t;render()}
 function render(){["hoy","rutinas","progreso"].forEach(t=>el("nav-"+t).className=page===t?"on":"");el("screen").innerHTML=page==="hoy"?viewToday():page==="rutinas"?viewRoutines():viewProgress()}
 function viewToday(){const ongoing=db.sessions.find(s=>!s.finished);let rows=ongoing?ongoing.entries:[];return '<h1>Tu entrenamiento</h1><p class="muted small">Registra cada ejercicio mientras entrenas o dicta todo al terminar.</p><div class="modes"><button class="'+(mode==="durante"?"on":"")+'" onclick="chooseMode(\'durante\')">Durante la sesión</button><button class="'+(mode==="final"?"on":"")+'" onclick="chooseMode(\'final\')">Todo al final</button></div><div class="card"><h2>🎙 Dictar entrenamiento</h2><textarea id="voice" placeholder="Remo con barra, tres series con 40 kilos, 10, 9 y 8 repeticiones">'+esc(original)+'</textarea><div class="actions"><button class="secondary" onclick="focusVoice()">🎙 Dictar con teclado</button><button class="primary" onclick="interpret()">Interpretar dictado</button></div><p class="muted small">En iPhone, pulsa <strong>Dictar con teclado</strong> y toca el micrófono del teclado. No hay que activar permisos de voz de Safari.</p><details><summary class="tiny" style="cursor:pointer;padding:10px 0">Atajos de Siri (opcional)</summary><p class="tiny">Atajo: «Dictar texto» → «Codificar URL» → «Abrir URLs» con la URL de esta web más #voice= y el texto codificado.</p><button class="secondary" onclick="copyPrefix()">Copiar prefijo para Atajos</button></details></div>'+viewDraft()+'<div class="card"><div class="row"><h2>Sesión actual</h2>'+(ongoing?'<button class="secondary" onclick="finish()">Finalizar</button>':'<button class="secondary" onclick="start()">Iniciar sesión</button>')+'</div>'+(rows.length?rows.map(e=>'<div class="entry"><strong>'+esc(e.name)+'</strong><p class="muted small">'+esc(e.sets.map(s=>s.weight+' kg × '+s.reps).join(' · '))+'</p></div>').join(''):'<p class="muted small">Todavía no has registrado series.</p>')+'</div><p class="tiny">Demo temporal. Prueba con datos ficticios: el almacenamiento del navegador no está sincronizado ni protegido como una aplicación definitiva.</p>'}

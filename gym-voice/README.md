@@ -14,8 +14,12 @@ Raw.githack.com sirve contenidos de muchos repositorios bajo el mismo origen, po
 
 ## Estado
 
-Código original completo y tests de 12 escenarios están en `gym-voice-source.zip` generado en este chat. Esta variante HTML de despliegue es una versión simplificada creada para reducir los pasos de publicación: soporta modos durante/final, edición y confirmación, rutinas de texto, histórico básico, exportación JSON, atajo URL `#voice=`, cache offline. No tiene sincronización ni IA. La aceptación real en Safari iPhone sigue pendiente.
+Código original completo y tests de 12 escenarios están en `gym-voice-source.zip` generado en este chat. Esta variante HTML de despliegue es una versión simplificada creada para reducir los pasos de publicación: soporta modos durante/final, edición y confirmación, rutinas de texto, histórico básico, exportación JSON, atajo URL `#voice=`, cache offline. No tiene sincronización ni IA. Safari iPhone: interfaz y dictado nativo + interpretación básica aceptados 2026-11-15. Pendiente validación física de guardado, recarga y casos complejos.
 
 ## Dictado iPhone (2026-11-15)
 
-En Safari iPhone real la POC abrió correctamente, pero el botón anterior `SpeechRecognition` notificó «El dictado del navegador no está disponible». Se elimina el reconocimiento de voz del navegador como dependencia. Desde Hoy usar `Dictar con teclado` (enfoca el campo) y pulsar el micrófono del teclado nativo Apple; después `Interpretar dictado`, comprobar las series y guardar. Siri/Atajos permanece como alternativa opcional hasta una prueba end-to-end. NO se ha verificado todavía el nuevo flujo de dictado del teclado en el iPhone real.
+En Safari iPhone real la POC abrió correctamente, pero el botón anterior `SpeechRecognition` notificó «El dictado del navegador no está disponible». Se elimina el reconocimiento de voz del navegador como dependencia. Desde Hoy usar `Dictar con teclado` (enfoca el campo) y pulsar el micrófono del teclado nativo Apple; después `Interpretar dictado`, comprobar las series y guardar. Siri/Atajos permanece como alternativa opcional hasta una prueba end-to-end. El usuario ya ha confirmado que el dictado del teclado y la interpretación básica funcionan en el iPhone.
+
+## Comprobación automatizada (sin CI)
+
+Ejecutar `node --test gym-voice/tests/parser.test.mjs` desde la raíz del repositorio. La prueba reproduce 19 frases, pesos y repeticiones y confirma el número de alertas. No requiere npm, Azure ni servicios externos.

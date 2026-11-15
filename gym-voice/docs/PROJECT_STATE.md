@@ -7,5 +7,6 @@ Fecha: 2026-11-15
 - Objetivo posterior: mover a un repositorio dedicado + hosting de origen propio cuando sea posible sin exigir ordenador al usuario.
 - Aceptación visual iPhone Safari: PASS, reportado por el usuario mediante captura 2026-11-15; pestañas, formulario y layout cargaron.
 - Fallo físico observado: botón Web Speech API indica «El dictado del navegador no está disponible».
-- Decisión: sustituir botón Web Speech API por acceso al dictado nativo del teclado (focus del textarea) y dejar Siri Atajos opcional. Necesita validación real del dictado teclado y del flujo guardado/refresco.
-- Próxima aceptación: dictar desde el teclado iOS, interpretar, confirmar, guardar y recargar.
+- Decisión: sustituir botón Web Speech API por acceso al dictado nativo del teclado (focus del textarea) y dejar Siri Atajos opcional. Dictado por teclado + interpretación: PASS reportado por usuario en Safari iPhone 2026-11-15. Guardado/refresco: aún sin confirmación física.
+- Parser reforzado: 19 casos sintéticos PASS, incluyendo grupos de pesos, 3x10, 90s descanso, ejercicios unidos por «y» y el fallo 98/siete de Siri.
+- Próxima aceptación: dictar caso complejo, revisar, guardar y confirmar persistencia tras recarga.
