@@ -1,0 +1,37 @@
+name: Gym Voice POC verification
+
+on:
+  push:
+    branches:
+      - gym-voice-poc
+    paths:
+      - 'gym-voice/**'
+      - '.github/workflows/gym-voice-poc-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Node tests and static code checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript syntax
+        run: |
+          node --check gym-voice/bridge/core.mjs
+          node --check gym-voice/bridge/server.mjs
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            import { Script } from "node:vm";
+            const html=readFileSync("gym-voice/index.html","utf8");
+            const js=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+            if (!js) throw new Error("Missing inline app JavaScript");
+            new Script(js);
+          '
+      - name: Unit and regression tests
+        run: node --test gym-voice/tests/*.test.mjs gym-voice/bridge/test/*.test.mjs

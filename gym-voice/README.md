@@ -45,3 +45,7 @@ The local-only POC now records workouts and routines atomically (write succeeds 
 
 ## AI backend (prepared, not deployed)
 See `bridge/README.md` and `bridge/test/core.test.mjs`. Same-origin Node service talks to existing Azure OpenAI with new Container Apps Managed Identity and structured JSON; protected bearer token is only provisioned through a separate private origin after deployment. The current raw.githack POC continues to work without the AI service. The `Interpretar con IA` button appears only on a `*.azurecontainerapps.io` HTTPS origin. No live Azure permission, image deployment, CI run or model request has been completed in this WP.
+
+## Repository status / migration
+
+Current GitHub branch `alexamz/newstudioarc:gym-voice-poc` is temporary. Final target: independent private `alexamz/gym-voice` repository. See [docs/REPOSITORY_MIGRATION.md](docs/REPOSITORY_MIGRATION.md). A test-only, no-Azure GitHub Actions workflow is scoped to the temporary branch and will not touch other pipelines.

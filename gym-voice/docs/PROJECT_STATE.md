@@ -35,3 +35,6 @@ The user confirms Gym and companion apps are exclusively personal. No login/mult
 
 ## WP-AI backend prepared — 2026-11-15
 Gym-only Node 22 container implementation added under `gym-voice/bridge`, with static PWA + protected `/api/interpret`, managed identity call to existing Azure OpenAI, strict response schema and validation, budget/secret safeguards, local tests. The mobile UI includes the AI path ONLY when hosted on a dedicated Azure Container Apps HTTPS domain; raw.githack preview remains in existing basic + ChatGPT-import mode. Operational status: CODE_PREPARED, PROVIDER_CALL_NOT_EXECUTED, AZURE_NOT_DEPLOYED. GitHub connector lacks RBAC/OIDC/Azure deployment authority for a new app. Do not interfere with research container; no cost incurred by this code change. User accepted local storage persistence 2026-11-15.
+
+## Repository migration and isolated CI — 2026-11-16
+Independent `alexamz/gym-voice` (private) is recommended and not yet created. GitHub connector cannot create a new repository. Path mapping and no-desktop one-time creation documented in `docs/REPOSITORY_MIGRATION.md`. Added fast CI on `gym-voice-poc` only (Node 22 regression tests/syntax), no Azure deploy, no cross-app resources. Workflow run must complete successfully before reporting CI PASS.
