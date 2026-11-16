@@ -38,3 +38,6 @@ Gym-only Node 22 container implementation added under `gym-voice/bridge`, with s
 
 ## Repository migration and isolated CI — 2026-11-16
 Independent `alexamz/gym-voice` (private) is recommended and not yet created. GitHub connector cannot create a new repository. Path mapping and no-desktop one-time creation documented in `docs/REPOSITORY_MIGRATION.md`. Added fast CI on `gym-voice-poc` only (Node 22 regression tests/syntax), no Azure deploy, no cross-app resources. Workflow run must complete successfully before reporting CI PASS.
+
+## Public bootstrap mirror — 2026-11-16
+`gym-voice/infra/bootstrap-gym-public.sh` is a sanitized public-only bootstrap copy pinned to the canonical private Gym repo code revision `0738369861c8007c487dae7a28ba370322aa65d3`; it dynamically discovers subscription/tenant from the user's logged-in Azure Cloud Shell. It MUST NOT be executed without account owner consent because it creates paid Azure Gym resources and assigns IAM. It contains no passwords, tokens, subscription GUIDs or tenant GUIDs. Legacy POC CI now checks script syntax; Safari fixture hostname fixed to align with canonical private project. Canonical deployment code/decision authority remains `alexamz/gym-voice`.

@@ -10,7 +10,7 @@ assert.ok(script,"Inline app script found");
 function boot(hash){
  const nodes={};
  const doc={getElementById(id){return nodes[id]??(nodes[id]={innerHTML:"",value:"",checked:false,style:{},className:""});}};
- const loc={hash,href:"https://example.invalid/gym-voice/index.html"+hash,protocol:"https:"};
+ const loc={hash,href:"https://example.invalid/gym-voice/index.html"+hash,protocol:"https:",hostname:"example.invalid"};
  const run=new Function("localStorage","document","location","window","navigator","history","setTimeout","URL","Blob",script+";return {getDraft:()=>draft,getIssues:()=>issues,getOriginal:()=>original,getNotice:()=>importNotice,chooseMode,interpret};");
  return {app:run({getItem:()=>null,setItem:()=>{}},doc,loc,{addEventListener:()=>{}},{},{replaceState:()=>{}},()=>{},null,null),nodes};
 }

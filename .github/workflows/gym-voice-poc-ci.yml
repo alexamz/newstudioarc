@@ -33,5 +33,7 @@ jobs:
             if (!js) throw new Error("Missing inline app JavaScript");
             new Script(js);
           '
+      - name: Check public Azure bootstrap syntax (no Azure calls)
+        run: bash -n gym-voice/infra/bootstrap-gym-public.sh
       - name: Unit and regression tests
         run: node --test gym-voice/tests/*.test.mjs gym-voice/bridge/test/*.test.mjs
